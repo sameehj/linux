@@ -1199,7 +1199,7 @@ static ssize_t tun_get_user(struct tun_struct *tun, struct tun_file *tfile,
 	struct sk_buff *skb;
 	size_t total_len = iov_iter_count(from);
 	size_t len = total_len, align = tun->align, linear;
-	struct virtio_net_hdr gso = { 0 };
+	struct virtio_net_header_rss gso = { 0 };
 	struct tun_pcpu_stats *stats;
 	int good_linear;
 	int copylen;
@@ -1405,7 +1405,7 @@ static ssize_t tun_put_user(struct tun_struct *tun,
 	}
 
 	if (vnet_hdr_sz) {
-		struct virtio_net_hdr gso;
+		struct virtio_net_header_rss gso;
 
 		if (iov_iter_count(iter) < vnet_hdr_sz)
 			return -EINVAL;

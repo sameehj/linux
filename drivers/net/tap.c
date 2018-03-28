@@ -528,7 +528,7 @@ static int tap_open(struct inode *inode, struct file *file)
 	q->sk.sk_write_space = tap_sock_write_space;
 	q->sk.sk_destruct = tap_sock_destruct;
 	q->flags = IFF_VNET_HDR | IFF_NO_PI | IFF_TAP;
-	q->vnet_hdr_sz = sizeof(struct virtio_net_hdr);
+	q->vnet_hdr_sz = sizeof(struct virtio_net_header_rss);
 
 	/*
 	 * so far only KVM virtio_net uses tap, enable zero copy between
@@ -631,7 +631,7 @@ static ssize_t tap_get_user(struct tap_queue *q, struct msghdr *m,
 	unsigned long total_len = iov_iter_count(from);
 	unsigned long len = total_len;
 	int err;
-	struct virtio_net_hdr vnet_hdr = { 0 };
+	struct virtio_net_header_rss vnet_hdr = { 0 };
 	int vnet_hdr_len = 0;
 	int copylen = 0;
 	int depth;
@@ -777,7 +777,7 @@ static ssize_t tap_put_user(struct tap_queue *q,
 	int total;
 
 	if (q->flags & IFF_VNET_HDR) {
-		struct virtio_net_hdr vnet_hdr;
+		struct virtio_net_header_rss vnet_hdr;
 		vnet_hdr_len = READ_ONCE(q->vnet_hdr_sz);
 		if (iov_iter_count(iter) < vnet_hdr_len)
 			return -EINVAL;
@@ -980,6 +980,7 @@ static long tap_ioctl(struct file *file, unsigned int cmd,
 	struct ifreq __user *ifr = argp;
 	unsigned int __user *up = argp;
 	unsigned short u;
+	struct virtio_net_hdr_rss rss_config;
 	int __user *sp = argp;
 	struct sockaddr sa;
 	int s;
@@ -1045,7 +1046,7 @@ static long tap_ioctl(struct file *file, unsigned int cmd,
 	case TUNSETVNETHDRSZ:
 		if (get_user(s, sp))
 			return -EFAULT;
-		if (s < (int)sizeof(struct virtio_net_hdr))
+		if (s < (int)sizeof(struct virtio_net_header_rss))
 			return -EINVAL;
 
 		q->vnet_hdr_sz = s;
@@ -1113,6 +1114,13 @@ static long tap_ioctl(struct file *file, unsigned int cmd,
 		tap_put_tap_dev(tap);
 		rtnl_unlock();
 		return ret;
+
+
+	case TUNSETRSS:
+		if (copy_from_user(&rss_config, &ifr->ifr_ifru.ifru_data, sizeof(rss_config)))
+			return -EFAULT;
+		return ret;
+
 
 	default:
 		return -EINVAL;

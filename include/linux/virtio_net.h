@@ -5,7 +5,7 @@
 #include <uapi/linux/virtio_net.h>
 
 static inline int virtio_net_hdr_to_skb(struct sk_buff *skb,
-					const struct virtio_net_hdr *hdr,
+					const struct virtio_net_header_rss *hdr,
 					bool little_endian)
 {
 	unsigned short gso_type = 0;
@@ -55,7 +55,7 @@ static inline int virtio_net_hdr_to_skb(struct sk_buff *skb,
 }
 
 static inline int virtio_net_hdr_from_skb(const struct sk_buff *skb,
-					  struct virtio_net_hdr *hdr,
+					  struct virtio_net_header_rss *hdr,
 					  bool little_endian,
 					  bool has_data_valid)
 {

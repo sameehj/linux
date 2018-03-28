@@ -16,6 +16,8 @@ static inline struct socket *tap_get_socket(struct file *f)
 
 #include <net/sock.h>
 #include <linux/skb_array.h>
+#include <linux/virtio_net.h>
+
 
 #define MAX_TAP_QUEUES 256
 
@@ -59,6 +61,7 @@ struct tap_queue {
 	unsigned int flags;
 	u16 queue_index;
 	bool enabled;
+	struct virtio_net_hdr_rss *rss_settings;
 	struct list_head next;
 	struct skb_array skb_array;
 };
